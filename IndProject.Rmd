@@ -1,0 +1,109 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+
+library(readr)
+AI_index<- read_csv("AI_index_db.csv")
+AI_threat <- read_csv("Ai_threat.csv")
+colnames(AI_threat)[colnames(AI_threat) == "Job titiles"] <- "Job_Titles"
+colnames(AI_threat)[colnames(AI_threat) == "AI Impact"] <- "AI_Impact"
+colnames(AI_threat)[colnames(AI_threat) == "AI models"] <- "AI_Models"
+
+```
+
+
+
+
+```{r}
+
+library(shiny)
+library(ggplot2)
+
+# Define the UI for the Shiny app
+ui <- navbarPage(
+  "AI Development App",
+  tabPanel("Visualization 1",
+    sidebarLayout(
+      sidebarPanel(
+        # Add input controls for Visualization 1 here
+        selectInput("variable1", "Choose a variable:", choices = colnames(AI_index))
+      ),
+      mainPanel(
+        # Output plot for Visualization 1
+        plotOutput("ai_plot1", height = "800px")
+      )
+    )
+  ),
+  tabPanel("Visualization 2",
+    sidebarLayout(
+      sidebarPanel(
+        # Add input controls for Visualization 2 here
+        selectInput("variable2", "Choose a variable:", choices = colnames(AI_threat))
+      ),
+      mainPanel(
+        # Output plot for Visualization 2
+        plotOutput("ai_plot2", height = "800px")
+      )
+    )
+  )
+)
+
+# Define the server logic for the Shiny app
+server <- function(input, output) {
+  # Create a reactive expression to filter the data based on user input for Visualization 1
+  filtered_data1 <- reactive({
+    AI_index
+  })
+  
+  # Generate the plot for Visualization 1 based on the filtered data
+  output$ai_plot1 <- renderPlot({
+    ggplot(filtered_data1(), aes(x = Country, y = .data[[input$variable1]])) +
+      geom_bar(stat = "identity", fill = "lightblue", color = "black") +
+      labs(
+        title = "AI Development of Countries",
+        x = "Country",
+        y = "Development score (out of 100)"
+      ) +
+      theme_minimal() +
+      theme(
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 14),
+        axis.text.y = element_text(size = 14),
+        plot.margin = margin(10, 10, 10, 10, "pt")
+      )
+  })
+  
+  # Create a reactive expression to filter the data based on user input for Visualization 2
+   filtered_data2 <- reactive({
+    AI_threat
+  })
+  
+  # Generate the plot for Visualization 2 based on the filtered data
+  output$ai_plot2 <- output$ai_plot2 <- renderPlot({
+    ggplot(filtered_data2(), aes(x = `Job_Titles`, y = .data[[input$variable2]])) +
+      geom_bar(stat = "identity", fill = "lightblue", color = "black") +
+      labs(
+        title = "AI Threat by Job Titles",
+        x = "Job Titles",
+        y = input$variable2
+      ) +
+      theme_minimal() +
+      theme(
+        axis.text.x = element_text(angle = 45, hjust = 1, size = 14),
+        axis.text.y = element_text(size = 14),
+        plot.margin = margin(10, 10, 10, 10, "pt")
+      )
+  })
+
+}
+
+# Create the Shiny app
+shinyApp(ui, server)
+
+
+```
+
+
+
