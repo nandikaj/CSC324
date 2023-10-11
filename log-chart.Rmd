@@ -1,0 +1,37 @@
+---
+output:
+  word_document: default
+  html_document: default
+  pdf_document: default
+---
+
+
+```{r}
+
+library(ggplot2)
+
+
+time_log <- data.frame(
+  Date = c("2023-09-09", "2023-09-09", "2023-09-16", "2023-09-23", "2023-10-01", "2023-10-07"),
+  Time_Spent_Hours = c(3, 2, 5, 3, 4, 2),
+  Activity = c("Learning RShiny, Data Cleaning", "Exploring Visualizations, Navigation Bar", "Creating World Map Visualization", "Creating Word Cloud Visualization", "Putting Visualizations Together", "Making Presentation and Documentation")
+)
+
+# Convert the Date column to a Date type
+time_log$Date <- as.Date(time_log$Date)
+
+# Create a bar chart
+time_chart <- ggplot(time_log, aes(x = Date, y = Time_Spent_Hours, fill = Activity)) +
+  geom_bar(stat = "identity") +
+  labs(title = "Time Spent on Project Activities",
+       x = "Date",
+       y = "Time Spent (Hours)",
+       fill = "Activity") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +
+  scale_fill_brewer(palette = "Set3")
+
+# Display the chart
+print(time_chart)
+
+```

@@ -1,0 +1,129 @@
+
+```{r}
+
+library(maptools)
+world <- readShapeSpatial("~/individualProject/world_shape/ne_50m_admin_0_countries")  ## You will need to change this file path
+
+non_matches <- anti_join(x = AI_index, y = world@data, by = c("Country" = "NAME_EN"))
+ 
+
+AI_index$Country[AI_index$Country == "China"] <- "People's Republic of China"
+AI_index$Country[AI_index$Country == "The Netherlands"] <- "Netherlands"
+
+
+world@data<- merge(world@data, AI_index, by.x='NAME_EN', by.y='Country')
+
+```
+
+```{r}
+
+
+
+
+#world_polys <- fortify(world)  ## Converts the shapefile into a data frame of polygons
+
+
+col_vals <- world@data$`Operating Environment`
+#col_vals[is.infinite(col_vals)] <- NA 
+#write.csv(map_data, file = "map_data.csv")
+
+pal <- colorNumeric("Blues", domain = col_vals)
+
+color_palette <- colorBin(
+  palette = c("red", "green", "blue", "orange", "yellow"),
+  domain = col_vals,
+  bins = c(0, 20, 40, 60, 80,100)
+)
+
+myLabels <- paste("<strong>", world@data$Cluster, "</strong>", "<br/>", 
+                   "Population:", world@data$POP_EST)
+
+
+leaflet(world) %>% addTiles() %>% 
+      addPolygons( fillColor = ~color_palette(col_vals),  weight = 1,
+                   label = lapply(myLabels, htmltools::HTML)) %>%
+      addLegend(pal = color_palette, values = col_vals,
+            title = "AI Development Score", position = "bottomleft", na.label = "Missing")
+
+
+```
+
+
+```{r}
+
+#:/Users/jhunjhun/Downloads/rstudio-export-1
+#C:/Users/jhunjhun/Downloads/rstudio-export-1/Ai_threat.csv
+
+
+library(readr)
+AI_threat <- read_csv("C:/Users/jhunjhun/Downloads/rstudio-export-1/Ai_threat.csV")
+
+
+#install.packages(tm)
+library(tm)
+library(wordcloud2)
+
+
+# Create a corpus from the text data in the "TextData" column
+corpus <- Corpus(VectorSource(AI_threat$Domain))
+
+# Preprocess the text data
+corpus <- tm_map(corpus, content_transformer(tolower))  # Convert to lowercase
+corpus <- tm_map(corpus, removePunctuation)  # Remove punctuation
+corpus <- tm_map(corpus, removeNumbers)  # Remove numbers
+corpus <- tm_map(corpus, removeWords, stopwords("english"))  # Remove common English stopwords
+corpus <- tm_map(corpus, stripWhitespace)  # Remove extra whitespaces
+
+# Create a TermDocumentMatrix
+tdm <- TermDocumentMatrix(corpus)
+
+# Convert the TermDocumentMatrix to a matrix
+matrix <- as.matrix(tdm)
+
+# Calculate word frequencies
+word_freq <- data.frame(word = rownames(matrix), freq = rowSums(matrix))
+
+# Create an interactive word cloud using wordcloud2
+wordcloud2(word_freq, size = 0.5, color = "Blue", backgroundColor = "White")
+
+
+
+```
+
+```{r}
+# Assuming your data frame is named AI_threat
+# Assuming your text data is in a column named "TextData"
+
+# Load necessary libraries
+library(tm)
+library(wordcloud2)
+
+# Create a corpus from the text data
+corpus <- Corpus(VectorSource(AI_threat$TextData))
+
+# Preprocess the text data
+corpus <- tm_map(corpus, content_transformer(tolower))  # Convert to lowercase
+corpus <- tm_map(corpus, removePunctuation)  # Remove punctuation
+corpus <- tm_map(corpus, removeNumbers)  # Remove numbers
+corpus <- tm_map(corpus, removeWords, stopwords("english"))  # Remove common English stopwords
+corpus <- tm_map(corpus, stripWhitespace)  # Remove extra whitespaces
+
+# Create a TermDocumentMatrix
+tdm <- TermDocumentMatrix(corpus)
+
+# Convert the TermDocumentMatrix to a matrix
+matrix <- as.matrix(tdm)
+
+# Calculate word frequencies
+word_freq <- data.frame(word = rownames(matrix), freq = rowSums(matrix))
+
+# Remove duplicated words and aggregate frequencies
+word_freq_unique <- aggregate(freq ~ word, data = word_freq, sum)
+
+# Create an interactive word cloud using wordcloud2
+wordcloud2(word_freq_unique, size = 1.5, color = "random", backgroundColor = "white")
+
+
+```
+
+
